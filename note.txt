@@ -1,4 +1,4 @@
 
 
 
-技术栈：client: sqlalchemy / qdrant / elastic
+技术栈：client: sqlalchemy / qdrant / elastic / loguru

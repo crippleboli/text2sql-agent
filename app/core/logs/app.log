@@ -1,0 +1,5 @@
+2026-07-31 14:47:04.799 | INFO     | request_id - 47d384d2-95ab-4294-865b-bae509d3af50 | __main__:<module>:47 - hello world
+2026-07-31 14:50:35.237 | INFO     | request_id - 22ee7b9a-db88-47c7-9b67-e5e61251e64b | __main__:graph:27 - request-1
+2026-07-31 14:50:35.238 | INFO     | request_id - 3790f506-ef5d-45f8-98d7-f9beb5b321dd | __main__:graph:27 - request-2
+2026-07-31 15:02:02.720 | INFO     | request_id - request-1 | __main__:graph:67 - request-1
+2026-07-31 15:02:02.720 | INFO     | request_id - request-2 | __main__:graph:67 - request-2

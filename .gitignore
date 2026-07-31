@@ -12,3 +12,4 @@ wheels/
 clean_filenames.py
 .idea
 docker
+!/app/core/logs/
