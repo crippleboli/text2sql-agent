@@ -22,7 +22,7 @@ class MysqlClientManager:
 
     def init(self):
         self.engine = create_async_engine(self._get_url())
-        self.session_factory = async_sessionmaker(dw_mysql_client_manager.engine,autoflush = True,expire_on_commint = False)
+        self.session_factory = async_sessionmaker(self.engine,autoflush = True,expire_on_commit = False,autobegin = True)
     async def close(self):
         await self.engine.dispose()
 

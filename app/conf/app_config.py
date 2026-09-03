@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from omegaconf import OmegaConf
 
+from app.conf.config_loader import load_config
+
 
 # 日志配置
 @dataclass
@@ -74,6 +76,7 @@ class AppConfig:
 
 
 config_file = Path(__file__).parents[2] / 'conf' / 'app_config.yaml'
-context = OmegaConf.load(config_file)
-schema = OmegaConf.structured(AppConfig)
-app_config: AppConfig = OmegaConf.to_object(OmegaConf.merge(schema, context))
+app_config: AppConfig = load_config(config_file,AppConfig)
+
+if __name__ == '__main__':
+    print(app_config.es.host)

@@ -1,8 +1,6 @@
 import asyncio
 from typing import Optional
-
 from elasticsearch import AsyncElasticsearch
-
 from app.conf.app_config import ESConfig, app_config
 
 
