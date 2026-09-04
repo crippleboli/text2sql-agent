@@ -6,6 +6,7 @@ from qdrant_client.http.models import PointStruct
 
 from app.conf.config_loader import load_config
 from app.conf.meta_config import MetaConfig
+from app.models.es.value_info_es import ValueInfoES
 from app.models.mysql.column_info_mysql import ColumnInfoMySQL
 from app.models.mysql.table_info_mysql import TableInfoMySQL
 from app.models.qdrant.column_info_qdrant import ColumnInfoQdrant
@@ -142,6 +143,32 @@ class MetaKnowledgeService:
             # 2.3 为字段取值建立全文索引
             # 确保index存在
             await self.value_es_repository.ensure_index()
+
+            column2sync: dict[str,bool]  = {}           # 字段名 是否需要同步
+            for table in meta_config.tables:
+                for column in table.columns:
+                    column2sync[f'{table.name}.{column.name}'] = column.sync
+
+            value_infos: list[ValueInfoES] = []
+            for column_info in column_infos:
+                sync = column2sync[column_info.id]
+                if sync:
+                    # 查询所有值
+                    table_name = column_info.table_id
+                    column_name = column_info.name
+                    values = await self.dw_mysql_repository.get_column_values(table_name, column_name, 1000000) # 复用
+                    current_value_infos = [ValueInfoES( id=f"{column_info.id}.{value}",
+                                                value=value,
+                                                type=column_info.type,
+                                                column_id=column_info.id,
+                                                column_name=column_info.name,
+                                                table_id=column_info.table_id,
+                                                table_name=column_info.table_id
+                                                ) for value in values]
+                    value_infos.extend(current_value_infos)
+
+
+            await self.value_es_repository.index(value_infos)
 
 
         # 3. 处理指标信息
