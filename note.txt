@@ -16,6 +16,9 @@ argparse TypeVar
         ...
         https://docs.sqlalchemy.org/en/20/dialects/mysql.html#module-sqlalchemy.dialects.mysql.asyncmy  # 创建异步 engine
 
+    qdrant
+        https://qdrant.tech/documentation/quickstart/
+
 1. yaml 代替 全局变量/硬编码    OmegaConf 去读取 yaml 中配置的数据
 2. sqlalchemy 代替 pymysql   将sql的数据映射为 python中的对象  对数据的操作可以简化为对对象的操作 (ORM)
 
@@ -28,3 +31,6 @@ argparse TypeVar
         3. flush 只执行不结束事务确认 依旧可以回滚  commit = flush + 结束事务并确认
         4. 单例 Engine + 单例 sessionmaker → 创建 N 个 Session → 执行具体事务
         5. engine pool sessionmaker  connection  session
+    qdrant
+        1.collection 相当于 mysql中的 table  PointStruct 相当于 mysql中的单条记录
+        2.PointStruct 含有三个属性 id主键 vector通过embedding获取语义对应向量  payload填写业务需要的信息
