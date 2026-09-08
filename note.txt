@@ -1,9 +1,4 @@
-
-
-
-技术栈：client:  / qdrant / elastic / loguru
-argparse TypeVar
-
+技术栈：loguru argparse TypeVar
 
 技术栈：
     OmegaConf
@@ -19,8 +14,20 @@ argparse TypeVar
     qdrant
         https://qdrant.tech/documentation/quickstart/
 
+    elasticsearch
+        https://www.elastic.co/docs/reference/elasticsearch/clients/python
+        https://www.elastic.co/guide/en/elasticsearch/reference/8.19/index.html
+        ...
+        https://www.elastic.co/guide/en/elasticsearch/reference/8.19/documents-indices.html
+        https://www.elastic.co/guide/en/elasticsearch/reference/8.19/es-ingestion-overview.html
+        ...
+        https://www.elastic.co/guide/en/elasticsearch/reference/8.19/getting-started.html   # quick start
+
+
 1. yaml 代替 全局变量/硬编码    OmegaConf 去读取 yaml 中配置的数据
 2. sqlalchemy 代替 pymysql   将sql的数据映射为 python中的对象  对数据的操作可以简化为对对象的操作 (ORM)
+3. elasticsearch 创建全文索引  会根据分词后的词进行匹配，而不是要求整个字段值完全相等
+3. kibana  elasticsearch 的后端Web UI服务
 
 
 
@@ -34,3 +41,8 @@ argparse TypeVar
     qdrant
         1.collection 相当于 mysql中的 table  PointStruct 相当于 mysql中的单条记录
         2.PointStruct 含有三个属性 id主键 vector通过embedding获取语义对应向量  payload填写业务需要的信息
+
+    es
+        1.索引 index 相当于 mysql中的table 相当于 es中的 collection   文档document 相当于单条数据  field 相当于字段名
+        2. 每个index 都有mapping/schema  相当于 每个table都有表结构
+        3. 本项目只使用了es的全文检索  通过指定为text类型 自动分词建立倒排索引

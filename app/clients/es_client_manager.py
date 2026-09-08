@@ -1,3 +1,6 @@
+"""
+elasticsearch 客户端管理
+"""
 import asyncio
 from typing import Optional
 from elasticsearch import AsyncElasticsearch
@@ -5,9 +8,13 @@ from app.conf.app_config import ESConfig, app_config
 
 
 class ESClientManager:
+    """
+        Elasticsearch 异步客户端管理器
+        持有异步连接实例，实现连接建立与销毁与业务逻辑的解耦
+    """
     def __init__(self,es_config: ESConfig):
         self.es_config = es_config
-        self.client: Optional[AsyncElasticsearch] = None
+        self.client: Optional[AsyncElasticsearch] = None       # 异步 ES 客户端实例，延迟到 init() 时创建
 
     def _get_url(self):
         return f"http://{self.es_config.host}:{self.es_config.port}"
@@ -18,11 +25,13 @@ class ESClientManager:
     async def close(self):
         await self.client.close()
 
+# 实例化 ES 客户端管理器的全局单例
 es_client_manager = ESClientManager(app_config.es)
 
 if __name__ == '__main__':
     es_client_manager.init()
 
+    # 创建插入数据 需要更新后才能查询到
     async def test():
         client = es_client_manager.client
         """
@@ -30,10 +39,10 @@ if __name__ == '__main__':
         await client.indices.create(
             index="my-books",
             mappings={
-                "dynamic": False,
+                "dynamic": False,       # 关闭动态映射
                 "properties": {
                     "name": {
-                        "type": "text"
+                        "type": "text"  # 指定为text类型  会经过分词器建立倒排索引 进行全文检索
                     },
                     "author": {
                         "type": "text"
@@ -53,12 +62,12 @@ if __name__ == '__main__':
         # 插入数据
         await client.bulk(
             operations=[
-                {
+                {  # 操作对象
                     "index": {
                         "_index": "my-books"
                     }
                 },
-                {
+                {   # 操作数据
                     "name": "Revelation Space",
                     "author": "Alastair Reynolds",
                     "release_date": "2000-03-15",
