@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
 from omegaconf import OmegaConf
-
 from app.conf.config_loader import load_config
 
 
