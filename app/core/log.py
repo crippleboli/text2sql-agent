@@ -19,9 +19,9 @@ log_format = (
 
 def inject_request_id(record):
     try:
-        request_id = request_id_ctx_var.get()
+        request_id = request_id_ctx_var.get()   # 尝试获取协程任务 通常由 FastAPI 等中间件提前 set 配置好
     except Exception as e:
-        request_id = uuid.uuid4()
+        request_id = uuid.uuid4()               # 获取不到 uuid兜底重新配置
     record["extra"]["request_id"] = request_id
 
 
@@ -29,16 +29,21 @@ def inject_request_id(record):
 logger.remove()
 # 添加自写函数
 logger = logger.patch(inject_request_id)
-if app_config.logging.console.enable:
-    logger.add(sink=sys.stdout, level=app_config.logging.console.level, format=log_format)
 
+# 终端输出
+if app_config.logging.console.enable:
+    logger.add(sink=sys.stdout,     # 标准输出到终端
+               level=app_config.logging.console.level,  # 日志过滤的最低级别
+               format=log_format)   # 日志的渲染格式
+
+# 日志文件输出
 if app_config.logging.file.enable:
     path = Path(app_config.logging.file.path)
     path.mkdir(parents=True, exist_ok=True)     # 确保路径存在
     logger.add(
         sink=path / "app.log",
         level=app_config.logging.file.level,
-        format=log_format,
+        format=log_format,          # 日志的渲染格式
         rotation=app_config.logging.file.rotation,
         retention=app_config.logging.file.retention,
         encoding="utf-8"

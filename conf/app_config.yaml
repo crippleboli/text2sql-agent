@@ -2,13 +2,13 @@
 # ============ 日志相关配置 =============
 logging:
   file:
-    enable: true
+    enable: true        # 控制是否写日志文件
     level: INFO
     path: logs          # 输出路径
     rotation: "10 MB"   # 日志文件大小
     retention: "7 days" # 日志保存时限
   console:
-    enable: true
+    enable: true        # 控制是否在终端打印
     level: INFO
 
 db_meta:
