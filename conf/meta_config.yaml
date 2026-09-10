@@ -1,3 +1,5 @@
+
+# column_info配置
 tables:
   - name: dim_region
     role: dim
@@ -166,7 +168,7 @@ tables:
         alias: [ 销售额, 订单金额, 收入 ]
         sync: false
 
-
+# metric_info配置
 metrics:
   - name: GMV
     description: 全称Gross Merchandise Value，表示所有订单的成交金额总和。

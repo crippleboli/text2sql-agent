@@ -1,4 +1,4 @@
-技术栈： argparse TypeVar
+技术栈：TypeVar
 
 技术栈：
     OmegaConf
@@ -25,6 +25,9 @@
 
     loguru
         https://loguru.readthedocs.io/en/stable/api.html    # api 文档
+
+    argparse
+        https://docs.python.org/zh-cn/3/library/argparse.html
 
 
 1. yaml 代替 全局变量/硬编码    OmegaConf 去读取 yaml 中配置的数据
@@ -55,3 +58,36 @@
         2.使用标准库中的contextvars 以init方法 传入上下文变量名id 构造特殊全局变量  不同协程任务之间修改该变量互不影响
         3. 类似的 可以传入name 为每个协程任务配置名字变量 task_name_ctx_var = ContextVar('task_name', default='unknown-task')
         4. patch方法添加补充的注入id函数 注入id函数 默认协程任务创建时已经set过id  这里只是使用uuid进行兜底
+
+    argparse
+        1.用于命令行选项、参数和子命令的解析器
+
+命令行使用：
+    1. 部署项目一般是linux环境 需要设置项目根目录到环境变量  这里开发项目在powershell 也需要配置换环境变量 环境变量会注入 sys.path
+    2. 简单的方式 是以模块运行代码 Python 解释器会将你运行命令时所在的当前终端目录（即项目根目录）自动添加到 sys.path 的第一顺位
+    3. python -m 模块 -c  yaml配置文件 方式传入配置参数 通过argparse包实现
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

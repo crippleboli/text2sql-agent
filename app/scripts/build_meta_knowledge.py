@@ -36,11 +36,14 @@ async def build(config_path:Path):
         await meta_knowledge_service.build(config_path)
 
 if __name__ == '__main__':
+    # 创建命令行参数解析器
     parser = argparse.ArgumentParser()
 
+    # 添加 -c / --conf 参数 用于传入配置文件路径  python -m 模块 -c 配置文件
     parser.add_argument('-c', '--conf')
 
+    # 解析命令行参数    获取 -c 参数传入的配置文件路径
     args = parser.parse_args()
     config_path = Path(args.conf)
-
+    # 路径参数传入 build函数
     asyncio.run(build(config_path))

@@ -1,3 +1,9 @@
+"""
+日志系统配置文件
+实现功能：
+1. 配置 Loguru 日志的控制台输出与本地文件
+2. 利用 contextvars + Loguru patch 机制，实现多协程并发场景下的 request_id 链路追踪与隔离
+"""
 import asyncio
 import sys
 import uuid

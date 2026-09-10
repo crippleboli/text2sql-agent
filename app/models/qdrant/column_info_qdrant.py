@@ -4,6 +4,7 @@ from typing import  TypedDict
 class ColumnInfoQdrant(TypedDict):
     id:str
     name:str
+    type:str
     role:str
     examples:str
     description:str
