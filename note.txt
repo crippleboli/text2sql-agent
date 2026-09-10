@@ -1,6 +1,4 @@
-技术栈：TypeVar
-
-技术栈：
+技术栈文档：
     OmegaConf
         https://omegaconf.readthedocs.io/en/2.3_branch/usage.html#from-a-yaml-file
         https://omegaconf.readthedocs.io/en/2.3_branch/usage.html#from-structured-config
@@ -30,30 +28,30 @@
         https://docs.python.org/zh-cn/3/library/argparse.html
 
 
-1. yaml 代替 全局变量/硬编码    OmegaConf 去读取 yaml 中配置的数据
-2. sqlalchemy 代替 pymysql   将sql的数据映射为 python中的对象  对数据的操作可以简化为对对象的操作 (ORM)
-3. elasticsearch 创建全文索引  会根据分词后的词进行匹配，而不是要求整个字段值完全相等
-4. kibana  elasticsearch 的后端Web UI服务
-5. loguru 日志记录 contextvars 配置协程任务属性
+技术栈作用：
+    OmegaConf
+        1. yaml 代替 全局变量/硬编码    OmegaConf 去读取 yaml 中配置的数据
 
-
-客户端：
-    mysql
+    mysql + sqlalchemy
         1.两个init方法拆开的目的是实现 懒加载 从而控制初始化时机和生命周期
         2.pycharm 侧边栏输入app_config.yaml 中配置的账号密码链接 mysql
         3. flush 只执行不结束事务确认 依旧可以回滚  commit = flush + 结束事务并确认
         4. 单例 Engine + 单例 sessionmaker → 创建 N 个 Session → 执行具体事务
-        5. engine pool sessionmaker  connection  session
+        5. 关键词engine pool sessionmaker  connection  session
+        6. sqlalchemy 代替 pymysql   将sql的数据映射为 python中的对象  对数据的操作可以简化为对对象的操作 (ORM)
+
     qdrant
         1.collection 相当于 mysql中的 table  PointStruct 相当于 mysql中的单条记录
         2.PointStruct 含有三个属性 id主键 vector通过embedding获取语义对应向量  payload填写业务需要的信息
 
-    es
+    es： 创建全文索引  会根据分词后的词进行匹配，而不是要求整个字段值完全相等
         1.索引 index 相当于 mysql中的table 相当于 es中的 collection   文档document 相当于单条数据  field 相当于字段名
         2. 每个index 都有mapping/schema  相当于 每个table都有表结构
         3. 本项目只使用了es的全文检索  通过指定为text类型 自动分词建立倒排索引
+    kibana
+        1.elasticsearch 的后端Web UI服务
 
-    log
+    loguru：loguru 日志记录 contextvars 配置协程任务id 属性
         1.项目请求是多个任务并发执行 所以出现报错日志时容易混淆 故引入 任务id 用于区分日志文件的归属
         2.使用标准库中的contextvars 以init方法 传入上下文变量名id 构造特殊全局变量  不同协程任务之间修改该变量互不影响
         3. 类似的 可以传入name 为每个协程任务配置名字变量 task_name_ctx_var = ContextVar('task_name', default='unknown-task')
@@ -61,6 +59,10 @@
 
     argparse
         1.用于命令行选项、参数和子命令的解析器
+
+    TypeVar
+        1.用于作为参数兼容定义两个类 AppConfig MetaConfig
+
 
 命令行使用：
     1. 部署项目一般是linux环境 需要设置项目根目录到环境变量  这里开发项目在powershell 也需要配置换环境变量 环境变量会注入 sys.path
