@@ -43,6 +43,12 @@ class MetaKnowledgeService:
         )
 
     async def _save_tables_to_meta_db(self,meta_config:MetaConfig):
+        """
+           根据 YAML 配置和 DW 业务数据库信息，生成表级和字段级元数据，并保存到 Meta MySQL 数据库中
+
+        :param meta_config: 由 YAML 配置文件加载得到的元数据配置对象
+        :return: 包含表级元数据列表和字段级元数据列表的元组
+        """
         table_infos: list[TableInfoMySQL] = []
         column_infos: list[ColumnInfoMySQL] = []
 
@@ -61,6 +67,7 @@ class MetaKnowledgeService:
             column_types: dict[str, str] = await self.dw_mysql_repository.get_column_types(table.name)
 
             for column in table.columns:
+                # 查询该字段的 10 个不同值，作为 Meta 数据库中的 examples
                 column_values: list = await self.dw_mysql_repository.get_column_values(table.name, column.name, 10)
 
                 # column -> ColumnInfoMySQL
@@ -76,7 +83,7 @@ class MetaKnowledgeService:
                 )
                 column_infos.append(column_info)
 
-        async with self.meta_mysql_repository.session.begin():
+        async with self.meta_mysql_repository.session.begin():  # 不用commit
             await self.meta_mysql_repository.save_table_infos(table_infos)
             await self.meta_mysql_repository.save_column_infos(column_infos)
         # await self.meta_mysql_repository.session.commit()

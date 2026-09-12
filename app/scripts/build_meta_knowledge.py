@@ -20,6 +20,7 @@ async def build(config_path:Path):
     embedding_client_manager.init()
     es_client_manager.init()
 
+    # 创建两个 Session 分别操作 meta 和 dw 两个数据库
     async with meta_mysql_client_manager.session_factory() as meta_session, dw_mysql_client_manager.session_factory() as dw_session:
         meta_mysql_repository = MetaMySQLRepository(meta_session)
         dw_mysql_repository = DWMySQLRepository(dw_session)
