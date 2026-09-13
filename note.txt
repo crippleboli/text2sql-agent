@@ -27,6 +27,10 @@
     argparse
         https://docs.python.org/zh-cn/3/library/argparse.html
 
+    embedding
+        https://huggingface.co/docs/text-embeddings-inference/en/quick_tour#huggingfacehub
+        https://huggingface.co/docs/text-embeddings-inference/en/quick_tour#openai
+        https://docs.langchain.com/oss/python/integrations/embeddings/text_embeddings_inference # LangChain方式调用
 
 技术栈作用：
     OmegaConf
@@ -48,6 +52,8 @@
         1.索引 index 相当于 mysql中的table 相当于 es中的 collection   文档document 相当于单条数据  field 相当于字段名
         2. 每个index 都有mapping/schema  相当于 每个table都有表结构
         3. 本项目只使用了es的全文检索  通过指定为text类型 自动分词建立倒排索引
+        4. 使用ik分词器
+
     kibana
         1.elasticsearch 的后端Web UI服务
 
@@ -62,6 +68,9 @@
 
     TypeVar
         1.用于作为参数兼容定义两个类 AppConfig MetaConfig
+
+    embedding
+        1.qdrant 三个属性中有vector  需要使用embedding将文本转向量
 
 
 命令行使用：
