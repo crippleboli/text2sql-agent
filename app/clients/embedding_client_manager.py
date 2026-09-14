@@ -13,7 +13,7 @@ class EmbeddingClientManager:
         self.config = config
 
     def _get_url(self):
-        return f"http://{self.config.host}:{self.config.port}/v1"
+        return f"http://{self.config.host}:{self.config.port}/v1/"
 
     def init(self):
         self.client = OpenAIEmbeddings(

@@ -4,10 +4,11 @@ from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.es_client_manager import es_client_manager
 from app.clients.mysql_client_manager import meta_mysql_client_manager, dw_mysql_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
-from app.repository.column_qdrant_repository import ColumnQdrantRepository
-from app.repository.dw_mysql_repository import DWMySQLRepository
-from app.repository.meta_mysql_repository import MetaMySQLRepository
-from app.repository.value_es_repository import ValueESRepository
+from app.repository.qdrant.column_qdrant_repository import ColumnQdrantRepository
+from app.repository.mysql.dw_mysql_repository import DWMySQLRepository
+from app.repository.mysql.meta_mysql_repository import MetaMySQLRepository
+from app.repository.es.value_es_repository import ValueESRepository
+from app.repository.qdrant.metric_qdrant_repository import MetricQdrantRepository
 from app.service.meta_knowledge_service import MetaKnowledgeService
 import asyncio
 
@@ -26,12 +27,16 @@ async def build(config_path:Path):
         column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)# 字段信息写入qdrant
         embedding_client = embedding_client_manager.client          # 获取embedding客户端管理器中的client
         value_es_repository = ValueESRepository(es_client_manager.client)
+        metric_qdrant_repository = MetricQdrantRepository(qdrant_client_manager.client) # 共用column_qdrant_repository的全局单例
+
+
 
         meta_knowledge_service = MetaKnowledgeService(meta_mysql_repository=meta_mysql_repository,
                                                       dw_mysql_repository=dw_mysql_repository,
                                                       column_qdrant_repository=column_qdrant_repository,
                                                       embedding_client=embedding_client,
-                                                      value_es_repository=value_es_repository
+                                                      value_es_repository=value_es_repository,
+                                                      metric_qdrant_repository=metric_qdrant_repository
                                                       )
         await meta_knowledge_service.build(config_path)
 

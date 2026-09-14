@@ -78,7 +78,10 @@
     2. 简单的方式 是以模块运行代码 Python 解释器会将你运行命令时所在的当前终端目录（即项目根目录）自动添加到 sys.path 的第一顺位
     3. python -m 模块 -c  yaml配置文件 方式传入配置参数 通过argparse包实现
 
-
+调试注意：
+    1. docker 的相关指令 需要在docker目录 启动指令在项目根目录 cd..
+    2. 多次调试前需清空数据  docker compose down -v  docker compose up -d
+    3. 启动docker容器后多等一会 太快会出现 MySQL连接不上 或者 embedding服务502
 
 
 

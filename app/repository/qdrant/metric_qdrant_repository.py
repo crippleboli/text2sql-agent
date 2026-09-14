@@ -1,0 +1,34 @@
+from qdrant_client import AsyncQdrantClient
+from qdrant_client.models import VectorParams, Distance,PointStruct
+from app.conf.app_config import app_config
+from app.models.qdrant.metric_info_qdrant import MetricInfoQdrant
+
+
+class MetricQdrantRepository:
+    collection_name = 'data-agent-metric'
+
+    def __init__(self, client:AsyncQdrantClient):
+        self.client = client
+
+    async def ensure_collection(self):
+        if not await self.client.collection_exists(self.collection_name):
+            await self.client.create_collection(collection_name=self.collection_name,
+                                                vectors_config=VectorParams(size = app_config.qdrant.embedding_size,
+                                                                            distance = Distance.COSINE))
+
+    async def upsert(self, ids: list[str], embeddings: list[list[float]], payloads: list[MetricInfoQdrant],
+                     batch_size: int = 20):
+        """
+        批量向 Qdrant 集合中插入或更新向量数据，并按照指定批次大小分批写入 分批防止一次写入太多 Point
+
+        :param ids: Point 的唯一 ID 列表
+        :param embeddings: Point 的向量列表
+        :param payloads: Point 的元数据列表
+        :param batch_size: 每批写入 Qdrant 的 Point 数量，默认为 20
+        """
+        zipped = list(zip(ids, embeddings, payloads))
+
+        for i in range(0, len(zipped), batch_size):
+            batch = zipped[i:i + batch_size]
+            batch_points = [PointStruct(id=id, vector=embedding, payload=payload) for id, embedding, payload in batch]
+            await self.client.upsert(collection_name=self.collection_name, points=batch_points)

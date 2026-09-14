@@ -1,7 +1,6 @@
 import uuid
 from pathlib import Path
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
-from qdrant_client.models import PointStruct
 from app.conf.config_loader import load_config
 from app.conf.meta_config import MetaConfig
 from app.core.log import logger
@@ -11,10 +10,12 @@ from app.models.mysql.column_metric_mysql import ColumnMetricMySQL
 from app.models.mysql.metric_info_mysql import MetricInfoMySQL
 from app.models.mysql.table_info_mysql import TableInfoMySQL
 from app.models.qdrant.column_info_qdrant import ColumnInfoQdrant
-from app.repository.column_qdrant_repository import ColumnQdrantRepository
-from app.repository.dw_mysql_repository import DWMySQLRepository
-from app.repository.meta_mysql_repository import MetaMySQLRepository
-from app.repository.value_es_repository import ValueESRepository
+from app.models.qdrant.metric_info_qdrant import MetricInfoQdrant
+from app.repository.qdrant.column_qdrant_repository import ColumnQdrantRepository
+from app.repository.mysql.dw_mysql_repository import DWMySQLRepository
+from app.repository.mysql.meta_mysql_repository import MetaMySQLRepository
+from app.repository.es.value_es_repository import ValueESRepository
+from app.repository.qdrant.metric_qdrant_repository import MetricQdrantRepository
 
 
 class MetaKnowledgeService:
@@ -24,6 +25,7 @@ class MetaKnowledgeService:
                  column_qdrant_repository:ColumnQdrantRepository,
                  embedding_client:HuggingFaceEndpointEmbeddings,
                  value_es_repository:ValueESRepository,
+                 metric_qdrant_repository:MetricQdrantRepository,
                  ):
 
         self.meta_mysql_repository = meta_mysql_repository
@@ -31,6 +33,8 @@ class MetaKnowledgeService:
         self.column_qdrant_repository = column_qdrant_repository
         self.embedding_client = embedding_client
         self.value_es_repository = value_es_repository
+        self.metric_qdrant_repository = metric_qdrant_repository
+
 
     def _convert_column_info_from_mysql_to_qdrant(self, column_info: ColumnInfoMySQL) -> ColumnInfoQdrant:
         """
@@ -45,6 +49,14 @@ class MetaKnowledgeService:
             description=column_info.description,
             alias=column_info.alias,
             table_id=column_info.table_id
+        )
+    def _convert_metric_info_from_mysql_to_qdrant(self, metric_info: MetricInfoMySQL) -> MetricInfoQdrant:
+        return MetricInfoQdrant(
+            id=metric_info.id,
+            name=metric_info.name,
+            description=metric_info.description,
+            relevant_columns=metric_info.relevant_columns,
+            alias=metric_info.alias
         )
 
     async def _save_tables_to_meta_db(self,meta_config:MetaConfig):
@@ -184,7 +196,76 @@ class MetaKnowledgeService:
 
         await self.value_es_repository.index(value_infos)
 
+    async def _save_metrics_to_meta_db(self, meta_config):
+        metric_infos: list[MetricInfoMySQL] = []
+        column_metrics: list[ColumnMetricMySQL] = []
+        # 根据配置信息 构造MetricInfoMySQL数据
+        for metric in meta_config.metrics:
+            metric_info = MetricInfoMySQL(
+                id=metric.name,
+                name=metric.name,
+                description=metric.description,
+                relevant_columns=metric.relevant_columns,
+                alias=metric.alias,
+            )
+            metric_infos.append(metric_info)
 
+            # 构造ColumnMetricMySQL数据
+            for relevant_column in metric.relevant_columns:
+                column_metric = ColumnMetricMySQL(
+                    column_id=relevant_column,
+                    metric_id=metric.name,
+                )
+                column_metrics.append(column_metric)
+
+        async with self.meta_mysql_repository.session.begin():
+            await self.meta_mysql_repository.save_metric_infos(metric_infos)  # 保存meta库中的指标信息
+            await self.meta_mysql_repository.save_column_metrics(column_metrics)  # 保存meta库中的指标与字段关联信息
+
+        return metric_infos
+
+    async def _save_metric_info_to_qdrant(self, metric_infos):
+        points: list[dict] = []
+        for metric_info in metric_infos:
+            points.append({
+                'id': uuid.uuid4(),
+                'embedding_text': metric_info.name,  # 名称转向量
+                'payload': self._convert_metric_info_from_mysql_to_qdrant(metric_info)
+            })
+            points.append({
+                'id': uuid.uuid4(),
+                'embedding_text': metric_info.description,  # 描述信息
+                'payload': self._convert_metric_info_from_mysql_to_qdrant(metric_info)
+            })
+            # 单独取出所有别名转向量
+            for alia in metric_info.alias:
+                points.append({
+                    'id': uuid.uuid4(),
+                    'embedding_text': alia,
+                    'payload': self._convert_metric_info_from_mysql_to_qdrant(metric_info)
+                })
+
+        ids = [point['id'] for point in points]  # 取出id部分cd
+
+        # 取出文本转为向量部分
+        embeddings = []
+        embedding_batch_size = 5
+        embedding_texts = [point['embedding_text'] for point in points]
+        for i in range(0, len(embedding_texts), embedding_batch_size):
+            batch_embedding_texts = embedding_texts[i:i + embedding_batch_size]
+            batch_embeddings = await self.embedding_client.aembed_documents(batch_embedding_texts)
+            embeddings.extend(batch_embeddings)
+
+        payloads = [point['payload'] for point in points]  # 取出payload部分
+
+        # 确保collection存在
+        await self.metric_qdrant_repository.ensure_collection()
+        # 保存数据到qdrant
+        await self.metric_qdrant_repository.upsert(ids, embeddings, payloads)
+
+
+
+    # 主函数流程
     async def build(self,config_path:Path):
         # 1. 加载配置文件
         meta_config: MetaConfig = load_config(config_path,MetaConfig)
@@ -204,12 +285,14 @@ class MetaKnowledgeService:
             logger.info('为字段取值建立全文索引')
 
 
-"""        # 3. 处理指标信息
+        # 3. 处理指标信息
         if meta_config.metrics:
             # 3.1 保存指标信息到meta数据库
-            metric_infos:list[MetricInfoMySQL] = []
-            column_metrics: list[ColumnMetricMySQL] = []
-            for metric in meta_config.metrics:
+            metric_infos = await self._save_metrics_to_meta_db(meta_config)
+            logger.info('保存指标信息到meta数据库')
 
-            # 3.2 为指标信息建立向量索引"""
+            # 3.2 为指标信息建立向量索引
+            await self._save_metric_info_to_qdrant(metric_infos)
+            logger.info('为指标信息建立向量索引')
 
+        logger.info('元数据知识库构建完成')
