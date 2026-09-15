@@ -84,13 +84,16 @@
     3. 启动docker容器后多等一会 太快会出现 MySQL连接不上 或者 embedding服务502
 
 
+召回部分：
+    LangChain
+        https://docs.langchain.com/oss/python/langgraph/graph-api#nodes
+        https://docs.langchain.com/oss/python/langgraph/graph-api#runtime-context
+        ...
+        https://docs.langchain.com/oss/python/langgraph/streaming
 
-
-
-
-
-
-
+    jieba分词器
+        https://github.com/fxsjy/jieba
+        https://github.com/fxsjy/jieba#%E5%9F%BA%E4%BA%8E-tf-idf-%E7%AE%97%E6%B3%95%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8A%BD%E5%8F%96
 
 
 
