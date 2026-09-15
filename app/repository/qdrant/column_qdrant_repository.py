@@ -38,3 +38,21 @@ class  ColumnQdrantRepository:
             batch = zipped[i:i+batch_size]
             batch_points = [PointStruct(id=id,vector=embedding,payload=payload) for id,embedding,payload in batch]
             await self.client.upsert(collection_name=self.collection_name,points=batch_points)
+
+
+    async def search(self, embedding:list[float],score_threshold:float = 0.6, limit:int = 5) -> list[ColumnInfoQdrant]:
+        """
+        根据输入的向量在 Qdrant 集合中检索最相似的字段元数据列表
+        :param embedding: 用户问题向量化的结果
+        :param score_threshold: 相似度匹配得分阈值，默认为 0.6
+        :param limit: 返回的最大匹配结果数量，默认为 5
+        :return: 匹配到的字段元数据列表
+        """
+
+        result = await self.client.query_points(
+             collection_name=self.collection_name,
+             query=embedding,
+             limit=limit,
+             )
+
+        return [point.payload for point in result.points]
