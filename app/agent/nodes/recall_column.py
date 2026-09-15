@@ -28,6 +28,7 @@ async def recall_column(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     chain = prompt | llm | output_parser
     result = await chain.ainvoke({'query': query})
 
+
     # 使用关键词召回字段信息
     retrieved_columns_map:dict[str,ColumnInfoQdrant] = {}
     keywords = list(set(keywords + result))

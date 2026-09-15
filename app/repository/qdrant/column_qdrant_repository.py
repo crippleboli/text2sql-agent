@@ -50,9 +50,10 @@ class  ColumnQdrantRepository:
         """
 
         result = await self.client.query_points(
-             collection_name=self.collection_name,
-             query=embedding,
-             limit=limit,
-             )
+            collection_name=self.collection_name,
+            query=embedding,
+            score_threshold=score_threshold,
+            limit=limit,
+        )
 
         return [point.payload for point in result.points]

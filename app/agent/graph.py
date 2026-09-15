@@ -19,6 +19,7 @@ from app.agent.nodes.validate_sql import validate_sql
 from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
 from app.repository.qdrant.column_qdrant_repository import ColumnQdrantRepository
+from app.repository.qdrant.metric_qdrant_repository import MetricQdrantRepository
 
 graph_builder = StateGraph(state_schema=DataAgentState,context_schema=DataAgentContext)
 
@@ -69,10 +70,12 @@ if __name__ == '__main__':
         embedding_client_manager.init()
         qdrant_client_manager.init()
         column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)
+        metric_qdrant_repository = MetricQdrantRepository(qdrant_client_manager.client)
 
         context = DataAgentContext(
             embedding_client=embedding_client_manager.client,
-            column_qdrant_repository=column_qdrant_repository
+            column_qdrant_repository=column_qdrant_repository,
+            metric_qdrant_repository=metric_qdrant_repository,
         )
 
         state = DataAgentState(
