@@ -18,9 +18,10 @@ from app.agent.nodes.validate_sql import validate_sql
 from app.clients import mysql_client_manager
 from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.es_client_manager import es_client_manager
-from app.clients.mysql_client_manager import meta_mysql_client_manager
+from app.clients.mysql_client_manager import meta_mysql_client_manager, dw_mysql_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
 from app.repository.es.value_es_repository import ValueESRepository
+from app.repository.mysql.dw_mysql_repository import DWMySQLRepository
 from app.repository.mysql.meta_mysql_repository import MetaMySQLRepository
 from app.repository.qdrant.column_qdrant_repository import ColumnQdrantRepository
 from app.repository.qdrant.metric_qdrant_repository import MetricQdrantRepository
@@ -76,6 +77,7 @@ if __name__ == '__main__':
         qdrant_client_manager.init()
         es_client_manager.init()
         meta_mysql_client_manager.init()
+        dw_mysql_client_manager.init()
 
         # 2. 实例化不依赖 Session 的 Repository
         embedding_client = embedding_client_manager.client
@@ -85,8 +87,9 @@ if __name__ == '__main__':
 
         try:
             # 3. 在 Session 生命周内创建 MySQL Repository 并运行 Graph
-            async with meta_mysql_client_manager.session_factory() as session:
-                meta_mysql_repository = MetaMySQLRepository(session)
+            async with meta_mysql_client_manager.session_factory() as meta_session,dw_mysql_client_manager.session_factory() as dw_session:
+                meta_mysql_repository = MetaMySQLRepository(meta_session)
+                dw_mysql_repository = DWMySQLRepository(dw_session)
 
                 context = DataAgentContext(
                     embedding_client=embedding_client,
@@ -94,6 +97,7 @@ if __name__ == '__main__':
                     metric_qdrant_repository=metric_qdrant_repository,
                     value_es_repository=value_es_repository,
                     meta_mysql_repository=meta_mysql_repository,
+                    dw_mysql_repository=dw_mysql_repository
                 )
 
                 state = DataAgentState(

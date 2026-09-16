@@ -1,3 +1,4 @@
+from sqlalchemy.dialects.mssql.aioodbc import dialect
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
@@ -28,3 +29,11 @@ class DWMySQLRepository:
         sql = f'select distinct {column_name} from {table_name} limit {limit}'
         result = await self.session.execute(text(sql))
         return result.scalars().fetchall()
+
+    async def get_db_info(self):
+        result = await self.session.execute(text('select version()'))
+        version = result.scalar()
+
+        dialect = self.session.get_bind().dialect.name
+
+        return {'version': version, 'dialect': dialect}

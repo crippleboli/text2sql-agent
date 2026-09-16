@@ -25,6 +25,17 @@ class MetricInfoState(TypedDict):
     relevant_columns: list[str]
     alias: list[str]
 
+# 额外信息
+class DateInfoState(TypedDict):
+    date: str
+    weekday: str
+    quarter: str
+
+class DBInfoState(TypedDict):
+    dialect: str
+    version: str
+
+
 
 class DataAgentState(TypedDict):
     query:str                                        # 用户查询
@@ -35,5 +46,8 @@ class DataAgentState(TypedDict):
 
     table_infos:list[TableInfoState]                 # 表信息
     metric_infos:list[MetricInfoState]               # 指标信息
+
+    date_info: DateInfoState                         # 日期
+    db_info: DBInfoState                             # 数据库
 
     error:str                                        # 验证sql时的错误信息
