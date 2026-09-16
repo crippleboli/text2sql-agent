@@ -1,5 +1,4 @@
 import asyncio
-
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 from app.agent.context import DataAgentContext
@@ -16,10 +15,13 @@ from app.agent.nodes.recall_column import recall_column
 from app.agent.nodes.recall_metric import recall_metric
 from app.agent.nodes.recall_value import recall_value
 from app.agent.nodes.validate_sql import validate_sql
+from app.clients import mysql_client_manager
 from app.clients.embedding_client_manager import embedding_client_manager
 from app.clients.es_client_manager import es_client_manager
+from app.clients.mysql_client_manager import meta_mysql_client_manager
 from app.clients.qdrant_client_manager import qdrant_client_manager
 from app.repository.es.value_es_repository import ValueESRepository
+from app.repository.mysql.meta_mysql_repository import MetaMySQLRepository
 from app.repository.qdrant.column_qdrant_repository import ColumnQdrantRepository
 from app.repository.qdrant.metric_qdrant_repository import MetricQdrantRepository
 
@@ -69,36 +71,41 @@ graph = graph_builder.compile()
 
 if __name__ == '__main__':
     async def test():
-        # embedding
+        # 1. 初始化所有 Client Manager
         embedding_client_manager.init()
-        embedding_client = embedding_client_manager.client
-
-        # qdrant
         qdrant_client_manager.init()
+        es_client_manager.init()
+        meta_mysql_client_manager.init()
+
+        # 2. 实例化不依赖 Session 的 Repository
+        embedding_client = embedding_client_manager.client
         column_qdrant_repository = ColumnQdrantRepository(qdrant_client_manager.client)
         metric_qdrant_repository = MetricQdrantRepository(qdrant_client_manager.client)
-
-        # es
-        es_client_manager.init()
         value_es_repository = ValueESRepository(es_client_manager.client)
 
-        context = DataAgentContext(
-            embedding_client=embedding_client,
-            column_qdrant_repository=column_qdrant_repository,
-            metric_qdrant_repository=metric_qdrant_repository,
-            value_es_repository=value_es_repository,
-        )
+        try:
+            # 3. 在 Session 生命周内创建 MySQL Repository 并运行 Graph
+            async with meta_mysql_client_manager.session_factory() as session:
+                meta_mysql_repository = MetaMySQLRepository(session)
 
-        state = DataAgentState(
-            query='统计华北地区总销售额'
-        )
+                context = DataAgentContext(
+                    embedding_client=embedding_client,
+                    column_qdrant_repository=column_qdrant_repository,
+                    metric_qdrant_repository=metric_qdrant_repository,
+                    value_es_repository=value_es_repository,
+                    meta_mysql_repository=meta_mysql_repository,
+                )
 
-        async for chunk in graph.astream(input=state, context=context,stream_mode='custom'):
-            print(chunk)
+                state = DataAgentState(
+                    query='统计华北地区总销售额'
+                )
 
+                async for chunk in graph.astream(input=state, context=context, stream_mode='custom'):
+                    print(chunk)
 
-        await qdrant_client_manager.close()
-        await es_client_manager.close()
-        await es_client_manager.close()
+        finally:
+            # 4. 确保程序退出前正确释放资源（去重并加保底清理）
+            await qdrant_client_manager.close()
+            await es_client_manager.close()
 
     asyncio.run(test())

@@ -33,7 +33,7 @@ async def recall_value(state:DataAgentState,runtime:Runtime[DataAgentContext]):
 
     values_map: dict[str, ValueInfoES] = {}
     for keyword in keywords:
-        values = await value_es_repository.search(keyword, score_threshold=0.6, limit=5)
+        values:list[ValueInfoES] = await value_es_repository.search(keyword)
         for value in values:
             if value["id"] not in values_map:
                 values_map[value["id"]] = value

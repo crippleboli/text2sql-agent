@@ -101,26 +101,17 @@ class ValueESRepository:
         """
 
 
-    async def search(self, query: str, score_threshold: float = 0.6, limit: int = 10) -> list[ValueInfoES]:
-
-        es_query = {
-            "match": {
-                "value": query
-            }
-        }
+    async def search(self, keyword: str, score_threshold: float = 0.6, limit: int = 10) -> list[ValueInfoES]:
 
         resp = await self.client.search(
             index=self.index_name,
-            query=es_query,
+            query={
+                "match": {
+                    "value": keyword
+                }
+            },
             min_score=score_threshold,
-            size=limit
+            size=limit,
         )
 
-        hits = resp.get("hits", {}).get("hits", [])
-
-        results: list[ValueInfoES] = []
-        for hit in hits:
-            source = hit["_source"]
-            results.append(source)
-
-        return results
+        return [hit["_source"] for hit in resp.get("hits", {}).get("hits", [])]

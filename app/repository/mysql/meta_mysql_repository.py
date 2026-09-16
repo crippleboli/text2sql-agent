@@ -4,6 +4,7 @@ Meta MySQL 数据访问层
 负责将业务逻辑层生成的表级元数据和字段级元数据，添加到 Meta MySQL 数据库的当前 Session 中，供外层事务统一提交保存
 本文件不负责生成元数据、查询 DW 业务数据库或提交事务
 """
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.mysql.column_info_mysql import ColumnInfoMySQL
 from app.models.mysql.column_metric_mysql import ColumnMetricMySQL
@@ -26,3 +27,21 @@ class MetaMySQLRepository:
 
     async def save_column_metrics(self, column_metrics:list[ColumnMetricMySQL]):
         self.session.add_all(column_metrics)
+
+    async def get_column_info_by_id(self,column_id:str) -> ColumnInfoMySQL | None:
+        return await self.session.get(ColumnInfoMySQL, column_id)
+
+    async def get_table_info_by_id(self, table_id:str) -> TableInfoMySQL | None:
+        return await self.session.get(TableInfoMySQL, table_id)
+
+    async def get_key_columns_by_table_id(self, table_id:str) -> list[ColumnInfoMySQL]:
+        sql = f"""
+            select *
+            from column_info
+            where table_id = :table_id
+            and role in ('primary_key', 'foreign_key')
+        """
+
+        query = select(ColumnInfoMySQL).from_statement(text(sql))
+        result = await self.session.execute(query, {"table_id": table_id})
+        return result.scalars().fetchall()
