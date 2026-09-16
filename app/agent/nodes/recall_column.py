@@ -10,7 +10,7 @@ from app.agent.llm import llm
 
 async def recall_column(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('找回字段')
+    writer('召回字段')
 
     query = state['query']
     keywords = state['keywords']

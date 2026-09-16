@@ -22,6 +22,7 @@
         https://www.elastic.co/guide/en/elasticsearch/reference/8.19/es-ingestion-overview.html
         ...
         https://www.elastic.co/guide/en/elasticsearch/reference/8.19/getting-started.html   # quick start
+        https://www.elastic.co/guide/en/elasticsearch/reference/8.19/getting-started.html#getting-started-match-query   # 查找
 
     loguru
         https://loguru.readthedocs.io/en/stable/api.html    # api 文档
@@ -98,7 +99,52 @@
         https://github.com/fxsjy/jieba#%E5%9F%BA%E4%BA%8E-tf-idf-%E7%AE%97%E6%B3%95%E7%9A%84%E5%85%B3%E9%94%AE%E8%AF%8D%E6%8A%BD%E5%8F%96
 
 
+    es召回数据：
+        请求方式：
+            GET data-agent-value/_search
+            {
+              "query": {
+                "match": {
+                  "value": "统计华北地区的销售总额"
+                }
+              }
+            }
 
+
+        请求结果：
+            {
+              "took": 28,
+              "timed_out": false,
+              "_shards": {
+                "total": 1,
+                "successful": 1,
+                "skipped": 0,
+                "failed": 0
+              },
+              "hits": {
+                "total": {
+                  "value": 1,
+                  "relation": "eq"
+                },
+                "max_score": 5.2626867,
+                "hits": [
+                  {
+                    "_index": "data-agent-value",
+                    "_id": "dim_region.region_name.华北",
+                    "_score": 5.2626867,
+                    "_source": {
+                      "id": "dim_region.region_name.华北",
+                      "value": "华北",
+                      "type": "varchar(50)",
+                      "column_id": "dim_region.region_name",
+                      "column_name": "region_name",
+                      "table_id": "dim_region",
+                      "table_name": "dim_region"
+                    }
+                  }
+                ]
+              }
+            }
 
 
 
