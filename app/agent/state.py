@@ -50,4 +50,5 @@ class DataAgentState(TypedDict):
     date_info: DateInfoState                         # 日期
     db_info: DBInfoState                             # 数据库
 
+    sql:str                                          # 生成的sql
     error:str                                        # 验证sql时的错误信息
