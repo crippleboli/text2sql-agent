@@ -71,6 +71,7 @@
 
     TypeVar
         1.用于作为参数兼容定义两个类 AppConfig MetaConfig
+        2.泛型函数
 
     embedding
         1.qdrant 三个属性中有vector  需要使用embedding将文本转向量
@@ -145,7 +146,6 @@
                 ]
               }
             }
-
 
 
 
