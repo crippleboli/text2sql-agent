@@ -37,3 +37,10 @@ class DWMySQLRepository:
         dialect = self.session.get_bind().dialect.name
 
         return {'version': version, 'dialect': dialect}
+
+    async def validate_sql(self, sql):
+        await self.session.execute(text(f"explain {sql}"))
+
+    async def execute_sql(self, sql):
+        result = await self.session.execute(text(sql))
+        return result.mappings().fetchall()

@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 )
 
                 state = DataAgentState(
-                    query='统计华北地区总销售额'
+                    query='统计去年各地区的总销售额'
                 )
 
                 async for chunk in graph.astream(input=state, context=context, stream_mode='custom'):
