@@ -12,7 +12,8 @@ from app.repository.mysql import meta_mysql_repository
 
 async def merge_retrieved_info(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('合并召回信息')
+    writer({"stage": "合并召回信息"})
+
 
     # 已召回信息
     retrieved_columns = state["retrieved_columns"]

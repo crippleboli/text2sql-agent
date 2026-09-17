@@ -10,7 +10,7 @@ import yaml
 
 async def generate_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('生成sql')
+    writer({"stage": "生成sql"})
 
     query = state["query"]
     table_infos = state["table_infos"]

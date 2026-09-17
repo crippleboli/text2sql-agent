@@ -2,7 +2,6 @@
     embedding 客户端管理
 """
 from typing import Optional
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from app.conf.app_config import EmbeddingConfig, app_config
 from langchain_openai import OpenAIEmbeddings
 

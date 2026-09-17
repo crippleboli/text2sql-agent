@@ -43,4 +43,4 @@ class DWMySQLRepository:
 
     async def execute_sql(self, sql):
         result = await self.session.execute(text(sql))
-        return result.mappings().fetchall()
+        return [dict(row) for row in result.mappings().fetchall()]

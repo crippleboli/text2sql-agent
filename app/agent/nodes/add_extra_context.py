@@ -7,7 +7,8 @@ from app.core.log import logger
 
 async def add_extra_context(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('添加额外上下文信息')
+    writer({"stage":"添加额外上下文信息"})
+
     dw_mysql_repository = runtime.context['dw_mysql_repository']
 
     # 当前的时间信息

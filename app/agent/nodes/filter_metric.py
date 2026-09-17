@@ -11,7 +11,7 @@ import yaml
 
 async def filter_metric(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('过滤指标')
+    writer({"stage": "过滤指标"})
 
     query = state['query']
     metric_infos = state['metric_infos']

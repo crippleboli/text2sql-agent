@@ -12,7 +12,7 @@ from app.repository.es.value_es_repository import ValueESRepository
 
 async def recall_value(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('召回字段取值')
+    writer({"stage": "召回字段取值"})
 
     query = state['query']
     keywords = state['keywords']

@@ -6,7 +6,7 @@ from app.core.log import logger
 
 async def validate_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('验证sql')
+    writer({"stage": "验证sql"})
 
     dw_mysql_repository = runtime.context["dw_mysql_repository"]
     sql = state["sql"]

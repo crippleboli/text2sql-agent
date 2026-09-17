@@ -148,11 +148,17 @@
             }
 
 
+前端部分：
+    FastAPI:
+        https://fastapi.org.cn/advanced/custom-response/#streamingrespo # 流式响应
+        https://fastapi.org.cn/tutorial/middleware/#google_vignette     # 中间件      用于设置请求id
+        https://fastapi.org.cn/advanced/events/                         # 生命周期事件 用于数据库的连接
+    SSE:
+        https://ruanyifeng.com/blog/2017/05/server-sent_events.html
 
 
 
 
-
-
-
+    FastAPI:
+        1.终端  fastapi dev
 

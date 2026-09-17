@@ -111,5 +111,7 @@ if __name__ == '__main__':
             # 4. 确保程序退出前正确释放资源（去重并加保底清理）
             await qdrant_client_manager.close()
             await es_client_manager.close()
+            await meta_mysql_client_manager.close()
+            await dw_mysql_client_manager.close()
 
     asyncio.run(test())

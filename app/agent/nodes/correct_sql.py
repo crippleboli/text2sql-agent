@@ -10,8 +10,7 @@ import yaml
 
 async def correct_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer = runtime.stream_writer
-    writer('校正sql')
-
+    writer({"stage": "校正sql"})
     sql = state["sql"]
     error = state["error"]
     query = state["query"]
