@@ -16,23 +16,27 @@ async def filter_metric(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     query = state['query']
     metric_infos = state['metric_infos']
 
-    # 用llm过滤指标信息
-    prompt = PromptTemplate(
-        template=load_prompt('filter_metric_info'),
-        input_variables=['query', 'metric_infos'],
-    )
-    output_parser = JsonOutputParser()
-    chain = prompt | llm | output_parser
+    try:
+        # 用llm过滤指标信息
+        prompt = PromptTemplate(
+            template=load_prompt('filter_metric_info'),
+            input_variables=['query', 'metric_infos'],
+        )
+        output_parser = JsonOutputParser()
+        chain = prompt | llm | output_parser
 
-    result = await chain.ainvoke({
-        'query': query,
-        'metric_infos': yaml.dump(metric_infos,allow_unicode=True,sort_keys=False),
-    })
+        result = await chain.ainvoke({
+            'query': query,
+            'metric_infos': yaml.dump(metric_infos,allow_unicode=True,sort_keys=False),
+        })
 
-    for metric_info in metric_infos[:]:
-        if metric_info["name"] not in result:
-            metric_infos.remove(metric_info)
+        for metric_info in metric_infos[:]:
+            if metric_info["name"] not in result:
+                metric_infos.remove(metric_info)
 
 
-    logger.info(f"过滤后的指标信息: {[metric_info['name'] for metric_info in metric_infos]}")
-    return {"metric_infos": metric_infos}
+        logger.info(f"过滤后的指标信息: {[metric_info['name'] for metric_info in metric_infos]}")
+        return {"metric_infos": metric_infos}
+    except Exception as e:
+        logger.error(f"过滤指标失败:{str(e)}")
+        raise

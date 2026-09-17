@@ -9,7 +9,12 @@ async def execute_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     writer({"stage": "执行sql"})
     sql = state["sql"]
     dw_mysql_repository = runtime.context["dw_mysql_repository"]
-    result = await dw_mysql_repository.execute_sql(sql)
 
-    writer({"result": result})
-    logger.info(f"执行SQL结果：{result}")
+    try:
+        result = await dw_mysql_repository.execute_sql(sql)
+
+        writer({"result": result})
+        logger.info(f"执行SQL结果：{result}")
+    except Exception as e:
+        logger.error(f"执行SQL失败:{str(e)}")
+        raise

@@ -18,26 +18,30 @@ async def recall_value(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     keywords = state['keywords']
     value_es_repository: ValueESRepository = runtime.context['value_es_repository']
 
-    # 使用LLM扩展关键词
-    prompt = PromptTemplate(
-        template=load_prompt('extend_keywords_for_value_recall'),
-        input_variables=['query']
-    )
-    output_parser = JsonOutputParser()
+    try:
+        # 使用LLM扩展关键词
+        prompt = PromptTemplate(
+            template=load_prompt('extend_keywords_for_value_recall'),
+            input_variables=['query']
+        )
+        output_parser = JsonOutputParser()
 
-    chain = prompt | llm | output_parser
-    result = await chain.ainvoke({'query': query})
+        chain = prompt | llm | output_parser
+        result = await chain.ainvoke({'query': query})
 
-    keywords = list(set(keywords + result))
+        keywords = list(set(keywords + result))
 
 
-    values_map: dict[str, ValueInfoES] = {}
-    for keyword in keywords:
-        values:list[ValueInfoES] = await value_es_repository.search(keyword)
-        for value in values:
-            if value["id"] not in values_map:
-                values_map[value["id"]] = value
+        values_map: dict[str, ValueInfoES] = {}
+        for keyword in keywords:
+            values:list[ValueInfoES] = await value_es_repository.search(keyword)
+            for value in values:
+                if value["id"] not in values_map:
+                    values_map[value["id"]] = value
 
-    retrieved_values = values_map.values()
-    logger.info(f"召回字段取值: {values_map.keys()}")
-    return {"retrieved_values": retrieved_values}
+        retrieved_values = values_map.values()
+        logger.info(f"召回字段取值: {values_map.keys()}")
+        return {"retrieved_values": retrieved_values}
+    except Exception as e:
+        logger.error(f"召回字段取值失败: {str(e)}")
+        raise

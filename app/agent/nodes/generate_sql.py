@@ -18,24 +18,28 @@ async def generate_sql(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     date_info = state["date_info"]
     db_info = state["db_info"]
 
-    # 调用的大模型生成sql
-    prompt = PromptTemplate(
-        template=load_prompt('generate_sql'),
-        input_variables=['query', 'table_infos', 'metric_infos', 'date_info', 'db_info'],
-    )
-    output_parser = StrOutputParser()
+    try:
+        # 调用的大模型生成sql
+        prompt = PromptTemplate(
+            template=load_prompt('generate_sql'),
+            input_variables=['query', 'table_infos', 'metric_infos', 'date_info', 'db_info'],
+        )
+        output_parser = StrOutputParser()
 
-    chain = prompt | llm | output_parser
+        chain = prompt | llm | output_parser
 
-    result = await chain.ainvoke(
-        {
-            'query': query,
-            'table_infos': yaml.dump(table_infos, allow_unicode=True, sort_keys=False),
-            'metric_infos': yaml.dump(metric_infos, allow_unicode=True, sort_keys=False),
-            'date_info': yaml.dump(date_info, allow_unicode=True, sort_keys=False),
-            'db_info': yaml.dump(db_info, allow_unicode=True, sort_keys=False)
-        }
-    )
+        result = await chain.ainvoke(
+            {
+                'query': query,
+                'table_infos': yaml.dump(table_infos, allow_unicode=True, sort_keys=False),
+                'metric_infos': yaml.dump(metric_infos, allow_unicode=True, sort_keys=False),
+                'date_info': yaml.dump(date_info, allow_unicode=True, sort_keys=False),
+                'db_info': yaml.dump(db_info, allow_unicode=True, sort_keys=False)
+            }
+        )
 
-    logger.info(f"生成的SQL:{result}")
-    return {"sql": result}
+        logger.info(f"生成的SQL:{result}")
+        return {"sql": result}
+    except Exception as e:
+        logger.error(f"生成SQL失败：{str(e)}")
+        raise

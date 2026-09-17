@@ -16,27 +16,31 @@ async def filter_table(state:DataAgentState,runtime:Runtime[DataAgentContext]):
     query = state['query']
     table_infos = state['table_infos']
 
-    # 用llm过滤表信息
-    prompt = PromptTemplate(
-        template=load_prompt('filter_table_info'),
-        input_variables=['query','table_infos'],
-    )
-    output_parser = JsonOutputParser()
-    chain = prompt | llm | output_parser
+    try:
+        # 用llm过滤表信息
+        prompt = PromptTemplate(
+            template=load_prompt('filter_table_info'),
+            input_variables=['query','table_infos'],
+        )
+        output_parser = JsonOutputParser()
+        chain = prompt | llm | output_parser
 
-    result = await chain.ainvoke({
-        'query': query,
-        'table_infos': yaml.dump(table_infos,allow_unicode=True,sort_keys=False),
-    })
+        result = await chain.ainvoke({
+            'query': query,
+            'table_infos': yaml.dump(table_infos,allow_unicode=True,sort_keys=False),
+        })
 
-    for table_info in table_infos[:]:
-        if table_info["name"] not in result:
-            table_infos.remove(table_info)
-        else:
-            selected_columns = result[table_info["name"]]
-            for column_info in table_info["columns"][:]:
-                if column_info["name"] not in selected_columns:
-                    table_info["columns"].remove(column_info)
+        for table_info in table_infos[:]:
+            if table_info["name"] not in result:
+                table_infos.remove(table_info)
+            else:
+                selected_columns = result[table_info["name"]]
+                for column_info in table_info["columns"][:]:
+                    if column_info["name"] not in selected_columns:
+                        table_info["columns"].remove(column_info)
 
-    logger.info(f"过滤后的表信息: {[table_info['name'] for table_info in table_infos]}")
-    return {"table_infos": table_infos}
+        logger.info(f"过滤后的表信息: {[table_info['name'] for table_info in table_infos]}")
+        return {"table_infos": table_infos}
+    except Exception as e:
+        logger.error(f"过滤表格失败:{str(e)}")
+        raise
