@@ -90,7 +90,7 @@ flowchart TB
   → 执行 SQL，流式返回结果
 ```
 
-README 会在 GitHub 上直接渲染下面的 Mermaid 图；同一份原始图也保存在 [graph.mmd](graph.mmd)，方便独立查看或编辑。
+以下为 LangGraph流程图，源文件见 [graph.mmd](graph.mmd)。
 
 ```mermaid
 flowchart TD
@@ -201,4 +201,4 @@ main.py               # FastAPI 应用入口
 
 ## 相关项目
 
-配套的 Web 界面见 [text2sql-agent-frontend](../text2sql-agent-frontend)。
+配套的 Web 界面见 [text2sql-agent-frontend](https://github.com/crippleboli/text2sql-agent-frontend)。
